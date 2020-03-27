@@ -1,0 +1,78 @@
+#include<iostream>
+#include<omp.h>
+#include<ctime>
+using namespace std;
+void main()
+{
+	int n;
+	double w1, w2;
+	clock_t t1, t2;
+	cout << "Enter the of the matrix = ";
+	cin >> n;
+	double A[100][100], U[100][100], L[100][100];
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			cin >> A[i][j];
+			U[i][j] = 0;
+			L[i][j] = 0;
+			if (i == j)
+				L[i][j] = 1;
+		}
+	}
+	t1 = clock();
+	w1 = omp_get_wtime();
+
+#pragma omp parallel for  
+	for (int i = 0; i <n; i++) {
+#pragma omp parallel for 
+		for (int j = i; j <n; j++) {
+			U[i][j] = A[i][j];
+		}
+#pragma omp parallel for 
+		for (int k = i + 1; k< n ; k++) {
+			L[k][i] = A[k][i] / U[i][i];
+		}
+#pragma omp parallel for 
+		for (int k = i + 1; k < n; k++) {
+#pragma omp parallel for 
+			for (int j = i + 1; j < n; j++)
+			{
+				A[k][j] = A[k][j] - (L[k][i] * U[i][j]);
+			}
+		}
+	}
+	t2 = clock();
+	w2 = omp_get_wtime();
+	cout << endl;
+
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < n; j++)
+		{
+			cout << A[i][j] << " ";
+		}
+		cout << endl;
+	}
+
+	cout << endl;
+
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			cout << U[i][j] << " ";
+		}
+		cout << endl;
+	}
+
+	cout << endl;
+
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			cout << L[i][j] << " ";
+		}
+		cout << endl;
+	}
+	cout << endl;
+	cout << double(t2 - t1) / CLOCKS_PER_SEC << endl;
+	cout << w2 - w1 << endl;
+	system("pause");
+}
